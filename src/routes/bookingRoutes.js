@@ -39,7 +39,7 @@ router.get('/booking/:id', (req, res)=>{
 });
 
 //Cron job endpoint to update delivered to collect where needed
-cron.schedule("17 18 * * *", function() {
+cron.schedule("01 00 * * *", function() {
     db.query('UPDATE bookings SET status = 2 WHERE status = 1 AND DATE(end_date) <= CURDATE()',(err, results)=>{
         if(err){
             console.log(err.message);
