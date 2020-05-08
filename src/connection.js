@@ -7,6 +7,7 @@ const connection = mysql.createPool({
     database : '',
     port     : '',
     dateStrings: 'true',
+    //debug    : 'true'
   });
 
 module.exports = connection;

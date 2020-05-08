@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../connection');
+const cron = require('node-cron');
 
 router = express.Router();
 
@@ -28,7 +29,7 @@ router.get('/bookings', (req, res)=>{
 //Get booking by id
 router.get('/booking/:id', (req, res)=>{
     var id = req.params.id;
-    db.query(`SELECT * from bookings WHERE id=${id}`,(err, results)=>{
+    db.query(`SELECT bookings.id, bookings.status, bookings.start_date, bookings.end_date, bookings.date_booked, customers.fname, customers.lname, customers.address, customers.phone, customers.geocode, inventory.name, inventory.description FROM bookings INNER JOIN customers ON bookings.c_id = customers.id INNER JOIN inventory ON bookings.i_id = inventory.id WHERE bookings.id =${id}`,(err, results)=>{
         if(err){
             console.log(err.message);
             return res.status(400).send({ error: 'Bad Request' });
@@ -37,14 +38,15 @@ router.get('/booking/:id', (req, res)=>{
     });
 });
 
-//Cron job endpoint
-router.get('/bookings/update', (req, res)=>{
+//Cron job endpoint to update delivered to collect where needed
+cron.schedule("17 18 * * *", function() {
     db.query('UPDATE bookings SET status = 2 WHERE status = 1 AND DATE(end_date) <= CURDATE()',(err, results)=>{
         if(err){
             console.log(err.message);
-            return res.status(400).send({ error: 'Bad request' });
         }
-        return res.status(200).send(results);
+        const today = new Date().toISOString().substr(0,10);
+        console.log('Performing cron update - '+today)
+        console.log(results);
     });
 });
 
